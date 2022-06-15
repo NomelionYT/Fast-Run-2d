@@ -36,7 +36,7 @@ public class CloudSpawner : MonoBehaviour
     {
         _cloudFreq = Random.Range(0.5f, 0.75f);
         _cloudSize = Random.Range(0.5f, 0.75f);
-        _cloudPosition.x = -11.5f;
+        _cloudPosition.x = -5f;
         _cloudPosition.y = Random.Range(-4.3f, 4.3f);
     }
 }
