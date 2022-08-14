@@ -4,39 +4,56 @@ using UnityEngine;
 
 public class CloudSpawner : MonoBehaviour
 {
-    private float _cloudSize;
-    private float _cloudFreq;
+    [Header("Cloud settings")]
+    [SerializeField] private Cloud _cloudPrefab;
+    [SerializeField] private Sprite[] _cloudSprites;
+    [SerializeField] private float _minSize = 0.5f;
+    [SerializeField] private float _maxSize = 0.75f;
+    [SerializeField] private float _maxSpeed = 1;
+    [SerializeField] private float _minSpeed = 2;
+    
 
-    private Vector3 _cloudPosition;
+    [Header("Spawn settings")]
+    [SerializeField] private float _minTimeToSpawn = 0.5f;
+    [SerializeField] private float _maxTimeToSpawn = 0.75f;
 
-    [SerializeField] private GameObject[] _cloudPrefabs;
-    private GameObject _cloudPrefab;
+    private float _minYToSpawn;
+    private float _maxYToSpawn;
+    private float _timeToNextSpawn;
 
-    void Start()
+    private void Start()
     {
-        StartCoroutine("spawnClouds");
+        _minYToSpawn = Camera.main.ScreenToWorldPoint(new Vector3(0, 0)).y;
+        _maxYToSpawn = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height)).y;
+
+        _minTimeToSpawn = _minTimeToSpawn > _maxTimeToSpawn ? _maxTimeToSpawn : _minTimeToSpawn;
+        _minSpeed = _minSpeed > _maxSpeed ? _maxSpeed : _minSpeed;
+        _minSize = _minSize > _maxSize ? _maxSize : _minSize;
+
+        StartCoroutine(SpawnCloudsCoroutine());
     }
-    void Update()
-    {
-    }
-    IEnumerator spawnClouds()
+
+    private IEnumerator SpawnCloudsCoroutine()
     {
         while (true)
         {
-            yield return new WaitForSeconds(_cloudFreq);
-            SetCloudProperties();
-            int cloudPrefabNumber = Random.Range(0, _cloudPrefabs.Length);
-            _cloudPrefab = _cloudPrefabs[cloudPrefabNumber];
-            GameObject cloud = Instantiate<GameObject>(_cloudPrefab);
-            cloud.transform.position = _cloudPosition;
-            cloud.transform.localScale = new Vector3(_cloudSize, _cloudSize, 0);
+            _timeToNextSpawn = Random.Range(_minTimeToSpawn, _maxTimeToSpawn);
+            yield return new WaitForSeconds(_timeToNextSpawn);
+
+            Cloud cloud = Instantiate(_cloudPrefab, transform);
+            SetCloudProperties(cloud);
         }
     }
-    void SetCloudProperties()
+
+    private void SetCloudProperties(Cloud cloud)
     {
-        _cloudFreq = Random.Range(0.5f, 0.75f);
-        _cloudSize = Random.Range(0.5f, 0.75f);
-        _cloudPosition.x = -5f;
-        _cloudPosition.y = Random.Range(-4.3f, 4.3f);
+        float size = Random.Range(_minSize, _maxSize);
+        Vector3 scale = new Vector3(size, size, 0);
+        int randomIndex = Random.Range(0, _cloudSprites.Length);
+        Sprite sprite = _cloudSprites[randomIndex];
+        float randomY = Random.Range(_minYToSpawn, _maxYToSpawn);
+        Vector3 position = new Vector3(transform.position.x, randomY, transform.position.z);
+        float speed = Random.Range(_minSpeed, _maxSpeed);
+        cloud.Init(sprite, scale, position, speed);
     }
 }
